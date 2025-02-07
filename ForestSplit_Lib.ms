@@ -251,7 +251,7 @@ struct ST_ForestSplit
     */
     fn getAllForestObjects =
     (
-        local forestObjects = for obj in objects where findItem ForestClasses (classof obj) == 0 collect obj
+        local forestObjects = for obj in forestObjects where (classof obj == Forest_Pro or classof obj == Forest) collect obj
 
         if forestObjects.count > 0 then
         (
@@ -505,7 +505,8 @@ struct ST_ForestSplit
         forestObjects = selection -- Original forest that will be split
         -- Remove all the elements that are not a forest objet then check if the list is not empty
 
-        forestObjects = for obj in forestObjects where findItem ForestClasses (classof obj) == 0 collect obj
+        forestObjects = for obj in forestObjects where (classof obj == Forest_Pro or classof obj == Forest) collect obj
+        print(forestObjects)
         if forestObjects.count == 0 then (
             print "There is no valid selection, Forests, Process Stopped"
             return undefined

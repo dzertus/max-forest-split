@@ -6,12 +6,11 @@ try(
 
 rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
 (
-	group "Display" (
-		button DisplayNoneBtn "None"
-		button DisplayHalfBtn "Half"
-		button DisplayFullBtn "Full"
-
-	)
+    group "Display" (
+        button DisplayNoneBtn "None"
+        button DisplayHalfBtn "Half"
+        button DisplayFullBtn "Full"
+    )
 	group "Split" (
 		button SplitBtn "Split"
 	)
