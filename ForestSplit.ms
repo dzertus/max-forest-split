@@ -14,9 +14,9 @@ ForestSplitLog.setVerbosity #warning
 -- Retrieving version from deployment folder (e.g. \\koro\pub\MatCheck\0.0.1 => 0.0.1)
 FORESTSPLIT_VERSION = substituteString (pathConfig.stripPathToLeaf (getFilenamePath (getThisScriptFilename()))) "\\" ""
 
-fileIn "ForestSplit_UI.ms"
-fileIn "ForestSplit_Lib.ms"
-fileIn "ForestSplit_Macros.ms"
+fileIn @"A:\YTA\youssef\scripts\git\max_forest_split\ForestSplit_UI.ms"
+fileIn @"A:\YTA\youssef\scripts\git\max_forest_split\ForestSplit_Lib.ms"
+fileIn @"A:\YTA\youssef\scripts\git\max_forest_split\ForestSplit_Macros.ms"
 
 configFile = (getfileNamePath (getThisScriptFilename())) + @"\Config\" + __TATPROJECT__ + ".ms"
 if doesFileExist configFile then (

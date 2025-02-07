@@ -1,19 +1,30 @@
 global ForestSplit
 
 try(
-	destroyDialog OpenForestSplitRollout
+	destroyDialog ForestSplitRollout
 )catch()
 
 rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
 (
-	group "Imports" (
+	group "Display" (
+		button DisplayNoneBtn "None"
+		button DisplayHalfBtn "Half"
+		button DisplayFullBtn "Full"
+
+	)
+	group "Split" (
 		button SplitBtn "Split"
 	)
+	group "Delete" (
+		button DeleteBtn "Delete"
+	)
+	
 	on SplitBtn pressed do (
 		print "Processing forest split"
-		)
-		else (
-			messageBox "Can't find this shot render folder !"
-		)
+		ForestSplit.createSplit()
+	)
+    on DeleteBtn pressed do (
+		print "Deleting Forest Split Setup"
+		ForestSplit.deleteSplit layerName:"Split"
 	)
 )

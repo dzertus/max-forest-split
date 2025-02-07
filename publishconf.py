@@ -1,5 +1,5 @@
 REPO = "\\\\koro\\pub"
-PROJECT = "LightTool"
+PROJECT = "ForestSplit"
 SOFT = "Max"
 DEFAULT_PROJECTS = "acdc1,poat,lb"
 DEPLOY_RULES = [

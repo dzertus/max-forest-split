@@ -1,4 +1,4 @@
 FORESTSPLIT_VERSION = "DEV"
 
-ForestSplit.OpenLightToolRollout()
+ForestSplit.OpenForestSplitRollout()
 
