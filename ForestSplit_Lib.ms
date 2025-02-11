@@ -251,7 +251,7 @@ struct ST_ForestSplit
     */
     fn getAllForestObjects =
     (
-        local forestObjects = for obj in forestObjects where (classof obj == Forest_Pro or classof obj == Forest) collect obj
+        local forestObjects = for obj in objects where (classof obj == Forest_Pro or classof obj == Forest) collect obj
 
         if forestObjects.count > 0 then
         (

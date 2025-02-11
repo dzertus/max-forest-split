@@ -1,13 +1,19 @@
 global ForestSplit
+global ForestSplit_Lib
 
 try (
     destroyDialog ForestSplitRollout
 ) catch()
 
+global maxDenityValue = 100000
+
 rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
 (
     group "Display" (
-        editText DisplayPercentage "Enter Value (0-10000)" width:200
+        editText DisplayPercentage "Viewport max Items (0-1000000) " width:400 tooltip:"0 --> Infinite"
+
+        radiobuttons Mode labels:#("Mesh", "Proxy")
+
         button ApplyDisplayBtn "Apply" width:80
     )
 
@@ -19,29 +25,31 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
         button DeleteBtn "Delete"
     )
 
-    -- Function to select all the objects of type #Forest ou #Forest_Pro
-    fn getForestObjects =
-    (
-        local forestClasses = #(#Forest, #Forest_Pro)
-        local forestObjects = for obj in objects where (findItem forestClasses (classof obj) == 0) collect obj
-        select forestObjects
-        return forestObjects
-    )
-
     -- Function to apply density to displayViewport
     fn applyDensityToForests densityValue =
     (
-        local forests = getForestObjects()
+        local forests = ForestSplit.getAllForestObjects()
         if forests.count > 0 then
         (
             for f in forests do
             (
-                try
+                -- Set mode
+                if (Mode.state == 1) then
                 (
-                    f.vmaxitems = densityValue
-                    print ("Applied " + (densityValue as string) + " to " + f.name)
+                    f.vmesh = 0
+                    if densityValue == 0 do
+                    (
+                        densityValue = maxDenityValue
+                    )
+
                 )
-                catch (format "Error applying density to: %\n" f.name)
+                else if (Mode.state == 2) then
+                (
+                    f.vmesh = 1
+                )
+                -- Set max items value
+                f.vmaxitems = densityValue
+                print ("Applied " + (densityValue as string) + " to " + f.name)
             )
         )
         else
@@ -54,13 +62,13 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
     (
         local value = try (DisplayPercentage.text as float) catch (undefined)
 
-        if value != undefined and value >= 0 and value <= 10000 then
+        if value != undefined and value >= 0 and value <= maxDenityValue then
         (
             applyDensityToForests value
         )
         else
         (
-            messageBox "Please enter a valid number between 0 and 10000" title:"Invalid Input"
+            messageBox "Please enter a valid number between 0 and 100000" title:"Invalid Input"
         )
     )
 
