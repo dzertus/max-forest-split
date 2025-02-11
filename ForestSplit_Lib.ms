@@ -2,7 +2,7 @@ global ForestSplitRollout
 
 struct ST_ForestSplit
 (
-
+	TOOLCODE = "Split",
 	ForestClasses = #(#Forest, #Forest_Pro),
 
     /*
@@ -35,7 +35,7 @@ struct ST_ForestSplit
             newObj = copy originalObj
             newObj.name = newName
 
-            print ("Duplicated object: " + newObj.name)
+            -- print ("Duplicated object: " + newObj.name)
             return newObj
         ) else (
             print "Error: The specified object does not exist."
@@ -281,6 +281,7 @@ struct ST_ForestSplit
     (
         if (classof forestObj == Forest_Pro or classof forestObj == Forest) and isKindOf splineObj Shape then (
             local index = forestObj.arnamelist.count + 1  -- Get next available index
+			print ("addSplineAreaToForest object: " + forestObj as string)
 
             -- Expand area lists to accommodate new area
             forestObj.arnamelist.count = index
@@ -329,7 +330,7 @@ struct ST_ForestSplit
         Example:
             refreshForestObject forestObj index
     */
-    fn refreshForestObject forestObj:undefined index:undefined=
+    fn refreshForestObject forestObj:undefined index:undefined =
     (
             forestObj.aridlist.count = index
             forestObj.arnodenamelist.count = index
@@ -484,7 +485,7 @@ struct ST_ForestSplit
     /*
         Function: createSplit
         The script to create the whole setup.
-        1 - Needs a closed spline called 'SplitArea', in the scene (Concatenation TOOL_CODE + "Area")
+        1 - Needs a closed spline called 'SplitArea', in the scene (Concatenation TOOLCODE + "Area")
         2 - Needs a selection of forest objects, in the scene
 
         Example:
@@ -493,9 +494,8 @@ struct ST_ForestSplit
 
     fn createSplit =
     (
-		local TOOL_CODE = "Split"
         -- Check of a split setup already exists
-        splitSetupExists = layerExist layerName:TOOL_CODE
+        splitSetupExists = layerExist layerName:TOOLCODE
         if splitSetupExists == true then (
             print "A split Setup already exists , you have to delete it first , only one setup is allowed for the moment."
             return undefined
@@ -513,27 +513,30 @@ struct ST_ForestSplit
         )
 
         -- Manually created spline
-        splitAreaObj = getNodeByName (TOOL_CODE + "Area") -- The spline shape that will be used as area for splitting
+        splitAreaObj = getNodeByName (TOOLCODE + "Area") -- The spline shape that will be used as area for splitting
+		
         if splitAreaObj == undefined then (
-            print ("You need to create a closed spline named : " + (TOOL_CODE + "Area"))
+            print ("You need to create a closed spline named : " + (TOOLCODE + "Area"))
             return undefined
         )
+		print ("Split Area Obj " + splitAreaObj as string)
+
         addEditSplineModifier objName:splitAreaObj.name
         maxOps.CollapseNode splitAreaObj off
-        moveObjectToLayer objName:splitAreaObj.name layerName:TOOL_CODE
+        moveObjectToLayer objName:splitAreaObj.name layerName:TOOLCODE
 
         -- Spline Duplicate and default params
-        splitAreaObjToMerge = duplicateObject objName:splitAreaObj.name suffix:TOOL_CODE -- Duplicate of the area because it is needed in the split process
+        splitAreaObjToMerge = duplicateObject objName:splitAreaObj.name suffix:TOOLCODE -- Duplicate of the area because it is needed in the split process
         addEditSplineModifier objName:splitAreaObjToMerge.name
         maxOps.CollapseNode splitAreaObjToMerge off
-        moveObjectToLayer objName:splitAreaObjToMerge.name layerName:TOOL_CODE
+        moveObjectToLayer objName:splitAreaObjToMerge.name layerName:TOOLCODE
 
         -- Surround Spline Bbox size and default params
         surroundAreaObj = createBoundingCircle marginPercent:10 name:"SurroundArea" -- Create a circle around the bounding box of the selection with a margin
         surroundAreaObj.isHidden = true -- Hiding the surrounding area spline because not needed by the artist
         addEditSplineModifier objName:surroundAreaObj.name
         maxOps.CollapseNode surroundAreaObj off
-        moveObjectToLayer objName:surroundAreaObj.name layerName:TOOL_CODE
+        moveObjectToLayer objName:surroundAreaObj.name layerName:TOOLCODE
 
         -- Attach splitAreaObjToMerge to surroundAreaObj (First duplicate of split area to the surround bbox spline)
         attachSplines baseSpline:surroundAreaObj targetSpline:splitAreaObjToMerge
@@ -541,10 +544,13 @@ struct ST_ForestSplit
         splitForestObj = #() -- Forest selection duplicate that will be used for the inside
 
         for forestObj in forestObjects do (
+
             local newForestObj = duplicateObject objName:forestObj.name suffix:"AVP"
-            moveObjectToLayer objName:newForestObj.name layerName:TOOL_CODE
+            moveObjectToLayer objName:newForestObj.name layerName:TOOLCODE
             append splitForestObj newForestObj
 
+			print ("Forest Object '" + forestObj as string)
+			print ("newForest Object '" + newForestObj as string)
             addSplineAreaToForest forestObj:forestObj splineObj:splitAreaObj
             addSplineAreaToForest forestObj:newForestObj splineObj:surroundAreaObj
         )

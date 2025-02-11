@@ -7,7 +7,7 @@ try (
 rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
 (
     group "Display" (
-        editText DisplayPercentage "Enter Value (0-100000)" width:200
+        editText DisplayPercentage "Enter Value (0-10000)" width:200
         button ApplyDisplayBtn "Apply" width:80
     )
 
@@ -19,7 +19,7 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
         button DeleteBtn "Delete"
     )
 
-    -- Fonction pour sélectionner tous les objets de type #Forest ou #Forest_Pro
+    -- Function to select all the objects of type #Forest ou #Forest_Pro
     fn getForestObjects =
     (
         local forestClasses = #(#Forest, #Forest_Pro)
@@ -28,7 +28,7 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
         return forestObjects
     )
 
-    -- Fonction pour appliquer la densité du displayViewport
+    -- Function to apply density to displayViewport
     fn applyDensityToForests densityValue =
     (
         local forests = getForestObjects()
@@ -49,19 +49,18 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
             messageBox "No Forest objects found in the scene!" title:"No Forests Found"
         )
     )
-
-    -- Vérifie si la valeur entrée est correcte et applique à la densité du viewport
+    -- Checks if the entered value is correct and applies it to vmaxitems attribute
     on ApplyDisplayBtn pressed do
     (
         local value = try (DisplayPercentage.text as float) catch (undefined)
 
-        if value != undefined and value >= 0 and value <= 100000 then
+        if value != undefined and value >= 0 and value <= 10000 then
         (
             applyDensityToForests value
         )
         else
         (
-            messageBox "Please enter a valid number between 0 and 100000" title:"Invalid Input"
+            messageBox "Please enter a valid number between 0 and 10000" title:"Invalid Input"
         )
     )
 
