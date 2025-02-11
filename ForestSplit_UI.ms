@@ -1,14 +1,14 @@
 global ForestSplit
 
-try(
+try (
     destroyDialog ForestSplitRollout
-)catch()
+) catch()
 
 rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
 (
     group "Display" (
-        editText DisplayPercentage "Enter Value (0-100)" width:100
-        button ApplyDisplayBtn "Apply" width:60
+        editText DisplayPercentage "Enter Value (0-100000)" width:200
+        button ApplyDisplayBtn "Apply" width:80
     )
 
     group "Split" (
@@ -19,18 +19,49 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
         button DeleteBtn "Delete"
     )
 
-    -- Vérifie si la valeur entrée est correcte et l'applique
-    on ApplyDisplayBtn pressed do
+    -- Fonction pour sélectionner tous les objets de type #Forest ou #Forest_Pro
+    fn getForestObjects =
     (
-        local value = DisplayPercentage.text as float
-        if (value >= 0 and value <= 100) then
+        local forestClasses = #(#Forest, #Forest_Pro)
+        local forestObjects = for obj in objects where (findItem forestClasses (classof obj) == 0) collect obj
+        select forestObjects
+        return forestObjects
+    )
+
+    -- Fonction pour appliquer la densité du displayViewport
+    fn applyDensityToForests densityValue =
+    (
+        local forests = getForestObjects()
+        if forests.count > 0 then
         (
-            print ("Display Percentage Set to: " + value as string)
-            -- Ici tu peux appeler une fonction pour appliquer ce pourcentage
+            for f in forests do
+            (
+                try
+                (
+                    f.vmaxitems = densityValue
+                    print ("Applied " + (densityValue as string) + " to " + f.name)
+                )
+                catch (format "Error applying density to: %\n" f.name)
+            )
         )
         else
         (
-            messageBox "Please enter a value between 0 and 100" title:"Invalid Input"
+            messageBox "No Forest objects found in the scene!" title:"No Forests Found"
+        )
+    )
+
+    -- Vérifie si la valeur entrée est correcte et applique à la densité du viewport
+    on ApplyDisplayBtn pressed do
+    (
+        local value = try (DisplayPercentage.text as float) catch (undefined)
+
+        if value != undefined and value >= 0 and value <= 100000 then
+        (
+            applyDensityToForests value
+        )
+        else
+        (
+            messageBox "Please enter a valid number between 0 and 100000" title:"Invalid Input"
         )
     )
 
@@ -45,4 +76,4 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
     )
 )
 
-createDialog ForestSplitRollout 400 200
+createDialog ForestSplitRollout 450 250
