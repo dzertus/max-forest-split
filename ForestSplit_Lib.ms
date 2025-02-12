@@ -300,8 +300,9 @@ struct ST_ForestSplit
     */
     fn addSplineAreaToForest forestObj:undefined splineObj:undefined =
     (
-        if (classof forestObj == Forest_Pro or classof forestObj == Forest) and classof splineObj SplineShape then
+        if ((classof forestObj) == Forest_Pro or (classof forestObj) == Forest) and (classof splineObj) == SplineShape do
 		(
+
             local index = forestObj.arnamelist.count + 1  -- Get next available index
 
             -- Expand area lists to accommodate new area
@@ -312,9 +313,6 @@ struct ST_ForestSplit
             forestObj.arwidthlist.count = index
             forestObj.arflafdenslist.count = index
             forestObj.arflafscalist.count = index
-
-            -- Refresh the values to display correctly
-            refreshForestObject forestObj:forestObj index:index
 
             -- Assign values
             forestObj.arnamelist[index] = splineObj.name
@@ -332,6 +330,11 @@ struct ST_ForestSplit
 
             forestObj.enabled = false
             forestObj.enabled = true
+
+            -- Refresh the values to display correctly
+			print forestObj
+			print index
+            refreshForestObject forestObj:forestObj index:index
 
             format "Spline Area added: %\n" splineObj.name
         ) 
@@ -355,30 +358,27 @@ struct ST_ForestSplit
     */
     fn refreshForestObject forestObj:undefined index:undefined =
     (
-            forestObj.aridlist.count = index
-            forestObj.arnodenamelist.count = index
-            forestObj.arnodenamelist[index] = ""
-            forestObj.arresollist.count = index
-            forestObj.arslicelist.count = index
-            forestObj.arslicetoplist.count = index
-            forestObj.arforceopenlist.count = index
-            forestObj.armaplist.count = index
-            forestObj.arscalelist.count = index
-            forestObj.arthresholdlist.count = index
-            forestObj.arselspeclist.count = index
-            forestObj.arspeclist.count = index
-            forestObj.arspeclist[index] = ""
-            forestObj.arpaintlist.count = index
-            forestObj.arflinvlist.count = index
-            forestObj.arboundchecklist.count = index
-            forestObj.arshapelist.count = index
-            forestObj.arobscalelist.count = index
-            forestObj.arsurfidlist.count = index
-            forestObj.arsurfidlist[index] = ""
-            forestObj.arzoffset.count = index
-
-
-        print "Forest object is now refreshed"
+		forestObj.aridlist.count = index
+		forestObj.arnodenamelist.count = index
+		forestObj.arnodenamelist[index] = ""
+		forestObj.arresollist.count = index
+		forestObj.arslicelist.count = index
+		forestObj.arslicetoplist.count = index
+		forestObj.arforceopenlist.count = index
+		forestObj.armaplist.count = index
+		forestObj.arscalelist.count = index
+		forestObj.arthresholdlist.count = index
+		forestObj.arselspeclist.count = index
+		forestObj.arspeclist.count = index
+		forestObj.arspeclist[index] = ""
+		forestObj.arpaintlist.count = index
+		forestObj.arflinvlist.count = index
+		forestObj.arboundchecklist.count = index
+		forestObj.arshapelist.count = index
+		forestObj.arobscalelist.count = index
+		forestObj.arsurfidlist.count = index
+		forestObj.arsurfidlist[index] = ""
+		forestObj.arzoffset.count = index
     ),
 
 
@@ -398,6 +398,7 @@ struct ST_ForestSplit
 
         for i = forestObj.arnamelist.count to 1 by -1 do
         (
+			print i
             if (findString areaNamesToRemove forestObj.arnamelist[i]) != undefined do
             (
                 forestObj.arnamelist.count -= 1
@@ -546,10 +547,18 @@ struct ST_ForestSplit
         )
 
 
-        forestObjects = selection -- Original forest that will be split
-        -- Remove all the elements that are not a forest objet then check if the list is not empty
-
-        forestObjects = for obj in forestObjects where (classof obj == Forest_Pro or classof obj == Forest) collect obj
+        forestObjects = #() -- Original forest list that will be split 
+		
+        -- Filter the selection to take only objects of type : Forest or Forest_Pro
+        for obj in selection do
+		(
+			if (classof obj == Forest_Pro) or (classof obj == Forest) do
+			(
+				append forestObjects obj
+			)
+		)
+		
+		-- if the list is empty , it means there is no forest in the selection, the process stops
         if forestObjects.count == 0 then 
 		(
             print "There is no valid selection, Forests, Process Stopped"
@@ -564,6 +573,7 @@ struct ST_ForestSplit
             print ("You need to create a closed spline named : " + (TOOLCODE + "Area"))
             return undefined
         )
+		
 		-- initialize splitArea Object (circle)
         addEditSplineModifier objName:splitAreaObj.name
         maxOps.CollapseNode splitAreaObj off
@@ -588,7 +598,7 @@ struct ST_ForestSplit
         splitForestObj = #() -- Forest selection duplicate that will be used for the inside
         for forestObj in forestObjects do 
 		(
-            local newForestObj = duplicateObject objName:forestObj.name suffix:"AVP"
+            newForestObj = duplicateObject objName:forestObj.name suffix:"AVP"
             moveObjectToLayer objName:newForestObj.name layerName:TOOLCODE
             append splitForestObj newForestObj
 
