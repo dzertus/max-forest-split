@@ -142,7 +142,28 @@ struct ST_ForestSplit
         )
     ),
 
+    /*
+        Function: createSplitAreaCircle
+		Creates the entry point needed circle 
 
+        Parameters:
+            radius (integer) - The radius of the circle
+            name (string) - The name of the new created circle.
+			pos (vec3) - The initial position of the circle
+        Example:
+            createSplitAreaCircle radius:1000 name:"SplitArea" pos:[0,0,0] 
+    */
+	fn createSplitAreaCircle radius:undefined name:undefined pos:undefined =
+	(
+		if (radius != undefined) and (name != undefined) and (pos != undefined) then
+		(
+			circleObject = Circle radius:radius pos:pos isSelected:on
+			circleObject.name = name
+		)
+		
+	),
+
+	
     /*
         Function: addEditSplineModifier
         Adds a edit spline modifier to an object
@@ -279,9 +300,9 @@ struct ST_ForestSplit
     */
     fn addSplineAreaToForest forestObj:undefined splineObj:undefined =
     (
-        if (classof forestObj == Forest_Pro or classof forestObj == Forest) and isKindOf splineObj Shape then (
+        if (classof forestObj == Forest_Pro or classof forestObj == Forest) and classof splineObj SplineShape then
+		(
             local index = forestObj.arnamelist.count + 1  -- Get next available index
-			print ("addSplineAreaToForest object: " + forestObj as string)
 
             -- Expand area lists to accommodate new area
             forestObj.arnamelist.count = index
@@ -313,7 +334,9 @@ struct ST_ForestSplit
             forestObj.enabled = true
 
             format "Spline Area added: %\n" splineObj.name
-        ) else (
+        ) 
+		else
+		(
             print "Error: Invalid ForestPack object or Spline!"
         )
     ),
@@ -372,9 +395,10 @@ struct ST_ForestSplit
     */
     fn removeForestSplines forestObj:undefined areaNamesToRemove:undefined =
     (
+
         for i = forestObj.arnamelist.count to 1 by -1 do
         (
-            if findItem areaNamesToRemove forestObj.arnamelist[i] > 0 do
+            if (findString areaNamesToRemove forestObj.arnamelist[i]) != undefined do
             (
                 forestObj.arnamelist.count -= 1
                 forestObj.arnodelist.count -= 1
@@ -401,11 +425,13 @@ struct ST_ForestSplit
     fn moveObjectToLayer objName:undefined layerName:undefined =
     (
         local obj = getNodeByName objName
-        if obj != undefined then (
+        if obj != undefined then
+		(
             local targetLayer = LayerManager.getLayerFromName layerName
 
             -- If the layer does not exist, create it
-            if targetLayer == undefined then (
+            if targetLayer == undefined then
+			(
                 targetLayer = LayerManager.newLayerFromName layerName
             )
 
@@ -413,7 +439,8 @@ struct ST_ForestSplit
             targetLayer.addNode obj
 
             format "Object '%' has been moved to layer '%'.\n" obj.name layerName
-        ) else (
+        ) else
+		(
             print "Error: The specified object does not exist."
         )
     ),
@@ -435,7 +462,8 @@ struct ST_ForestSplit
         local child = getNodeByName childName
         local parent = getNodeByName parentName
 
-        if child != undefined and parent != undefined then (
+        if child != undefined and parent != undefined then
+		(
             child.parent = parent
             format "Object '%' is now a child of '%'.\n" child.name parent.name
         ) else (
@@ -476,7 +504,22 @@ struct ST_ForestSplit
     (
         local layer = LayerManager.getLayerFromName layerName
         local nodes
-        layer.nodes &nodes
+
+		if layer == undefined do
+		(
+			print "No Forest Split setup to delete"
+			return undefined
+		)
+		layer.nodes &nodes
+
+		for obj in objects do
+		(
+			if (classof obj == Forest_Pro or classof obj == Forest) do
+			(
+				removeForestSplines forestObj:obj areaNamesToRemove:(TOOLCODE + "Area")
+			)
+		)
+			
         delete nodes
         LayerManager.deleteLayerByName layerName
     ),
@@ -496,7 +539,8 @@ struct ST_ForestSplit
     (
         -- Check of a split setup already exists
         splitSetupExists = layerExist layerName:TOOLCODE
-        if splitSetupExists == true then (
+        if splitSetupExists == true then
+		(
             print "A split Setup already exists , you have to delete it first , only one setup is allowed for the moment."
             return undefined
         )
@@ -506,8 +550,8 @@ struct ST_ForestSplit
         -- Remove all the elements that are not a forest objet then check if the list is not empty
 
         forestObjects = for obj in forestObjects where (classof obj == Forest_Pro or classof obj == Forest) collect obj
-        print(forestObjects)
-        if forestObjects.count == 0 then (
+        if forestObjects.count == 0 then 
+		(
             print "There is no valid selection, Forests, Process Stopped"
             return undefined
         )
@@ -515,12 +559,12 @@ struct ST_ForestSplit
         -- Manually created spline
         splitAreaObj = getNodeByName (TOOLCODE + "Area") -- The spline shape that will be used as area for splitting
 		
-        if splitAreaObj == undefined then (
+        if splitAreaObj == undefined then 
+		(
             print ("You need to create a closed spline named : " + (TOOLCODE + "Area"))
             return undefined
         )
-		print ("Split Area Obj " + splitAreaObj as string)
-
+		-- initialize splitArea Object (circle)
         addEditSplineModifier objName:splitAreaObj.name
         maxOps.CollapseNode splitAreaObj off
         moveObjectToLayer objName:splitAreaObj.name layerName:TOOLCODE
@@ -532,7 +576,7 @@ struct ST_ForestSplit
         moveObjectToLayer objName:splitAreaObjToMerge.name layerName:TOOLCODE
 
         -- Surround Spline Bbox size and default params
-        surroundAreaObj = createBoundingCircle marginPercent:10 name:"SurroundArea" -- Create a circle around the bounding box of the selection with a margin
+        surroundAreaObj = createBoundingCircle marginPercent:10 name:(TOOLCODE + "Area" + "Surround") -- Create a circle around the bounding box of the selection with a margin
         surroundAreaObj.isHidden = true -- Hiding the surrounding area spline because not needed by the artist
         addEditSplineModifier objName:surroundAreaObj.name
         maxOps.CollapseNode surroundAreaObj off
@@ -542,15 +586,12 @@ struct ST_ForestSplit
         attachSplines baseSpline:surroundAreaObj targetSpline:splitAreaObjToMerge
 
         splitForestObj = #() -- Forest selection duplicate that will be used for the inside
-
-        for forestObj in forestObjects do (
-
+        for forestObj in forestObjects do 
+		(
             local newForestObj = duplicateObject objName:forestObj.name suffix:"AVP"
             moveObjectToLayer objName:newForestObj.name layerName:TOOLCODE
             append splitForestObj newForestObj
 
-			print ("Forest Object '" + forestObj as string)
-			print ("newForest Object '" + newForestObj as string)
             addSplineAreaToForest forestObj:forestObj splineObj:splitAreaObj
             addSplineAreaToForest forestObj:newForestObj splineObj:surroundAreaObj
         )
