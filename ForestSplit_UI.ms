@@ -20,7 +20,11 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
     group "Split" (
         button SplitBtn "Split"
     )
-
+	
+    group "Create" (
+        button CreateBtn "Create Split Area"
+    )
+	
     group "Delete" (
         button DeleteBtn "Delete"
     )
@@ -72,14 +76,22 @@ rollout ForestSplitRollout ("Forest Split " + FORESTSPLIT_VERSION)
         )
     )
 
-    on SplitBtn pressed do (
+    on CreateBtn pressed do
+    (
+		print "Creating Split Area"
+		ForestSplit.createSplitAreaCircle radius:1000 name:(ForestSplit.TOOLCODE + "Area") pos:[0,0,0]
+	)
+	
+    on SplitBtn pressed do 
+	(
         print "Processing forest split"
         ForestSplit.createSplit()
     )
 
-    on DeleteBtn pressed do (
+    on DeleteBtn pressed do 
+	(
         print "Deleting Forest Split Setup"
-        ForestSplit.deleteSplit layerName:"Split"
+        ForestSplit.deleteSplit layerName:ForestSplit.TOOLCODE
     )
 )
 
