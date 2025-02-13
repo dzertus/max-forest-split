@@ -285,66 +285,6 @@ struct ST_ForestSplit
         )
     ),
 
-
-    /*
-        Function: addSplineAreaToForest
-        This will add a spline area to a forest / forest pro object.
-        It will assign default settings based on split forest tool.
-
-        Parameters:
-            forestObj (forest_node) - The forest that will have a new created area.
-            splineObj (spline_node) - The spline associated to the area.
-
-        Example:
-            addSplineAreaToForest forestObj splineObj
-    */
-    fn addSplineAreaToForest forestObj:undefined splineObj:undefined =
-    (
-        if ((classof forestObj) == Forest_Pro or (classof forestObj) == Forest) and (classof splineObj) == SplineShape do
-		(
-
-            local index = forestObj.arnamelist.count + 1  -- Get next available index
-
-            -- Expand area lists to accommodate new area
-            forestObj.arnamelist.count = index
-            forestObj.arnodelist.count = index
-            forestObj.artypelist.count = index
-            forestObj.arincexclist.count = index
-            forestObj.arwidthlist.count = index
-            forestObj.arflafdenslist.count = index
-            forestObj.arflafscalist.count = index
-
-            -- Assign values
-            forestObj.arnamelist[index] = splineObj.name
-            forestObj.arnodelist[index] = splineObj
-            forestObj.artypelist[index] = 0  -- 0 = Spline Area
-            forestObj.arincexclist[index] = 1  -- 1 = Exclude by default
-
-            -- Default settings
-            forestObj.arwidthlist[index] = 0  -- Thickness: 0
-            forestObj.arflafdenslist[index] = 0  -- Falloff Density: Off
-            forestObj.arflafscalist[index] = 0  -- Falloff Scale: Off
-
-            -- Activate the area by default
-            forestObj.pf_aractivelist[index] = 1
-
-            forestObj.enabled = false
-            forestObj.enabled = true
-
-            -- Refresh the values to display correctly
-			print forestObj
-			print index
-            refreshForestObject forestObj:forestObj index:index
-
-            format "Spline Area added: %\n" splineObj.name
-        ) 
-		else
-		(
-            print "Error: Invalid ForestPack object or Spline!"
-        )
-    ),
-
-
     /*
         Function: refreshForestObject
         This is needed to display correctly the new split forests
@@ -379,8 +319,64 @@ struct ST_ForestSplit
 		forestObj.arsurfidlist.count = index
 		forestObj.arsurfidlist[index] = ""
 		forestObj.arzoffset.count = index
+		forestObj.enabled = false
+		forestObj.enabled = true
+
     ),
 
+    /*
+        Function: addSplineAreaToForest
+        This will add a spline area to a forest / forest pro object.
+        It will assign default settings based on split forest tool.
+
+        Parameters:
+            forestObj (forest_node) - The forest that will have a new created area.
+            splineObj (spline_node) - The spline associated to the area.
+
+        Example:
+            addSplineAreaToForest forestObj splineObj
+    */
+    fn addSplineAreaToForest forestObj:undefined splineObj:undefined =
+    (
+        if ((classof forestObj) == Forest_Pro or (classof forestObj) == Forest) and (classof splineObj) == SplineShape then
+		(
+
+            local index = forestObj.arnamelist.count + 1  -- Get next available index
+
+            -- Expand area lists to accommodate new area
+            forestObj.arnamelist.count = index
+            forestObj.arnodelist.count = index
+            forestObj.artypelist.count = index
+            forestObj.arincexclist.count = index
+            forestObj.arwidthlist.count = index
+            forestObj.arflafdenslist.count = index
+            forestObj.arflafscalist.count = index
+
+            -- Assign values
+            forestObj.arnamelist[index] = splineObj.name
+            forestObj.arnodelist[index] = splineObj
+            forestObj.artypelist[index] = 0  -- 0 = Spline Area
+            forestObj.arincexclist[index] = 1  -- 1 = Exclude by default
+
+            -- Default settings
+            forestObj.arwidthlist[index] = 0  -- Thickness: 0
+            forestObj.arflafdenslist[index] = 0  -- Falloff Density: Off
+            forestObj.arflafscalist[index] = 0  -- Falloff Scale: Off
+
+            -- Activate the area by default
+            forestObj.pf_aractivelist[index] = 1
+
+            -- Refresh the values to display correctly
+            refreshForestObject forestObj:forestObj index:index
+
+
+            format "Spline Area added: %\n" splineObj.name
+        ) 
+		else
+		(
+            print "Error: Invalid ForestPack object or Spline!"
+        )
+    ),
 
     /*
         Function: removeForestSplines
@@ -393,23 +389,44 @@ struct ST_ForestSplit
         Example:
             removeForestSplines forestObj #('keyword1', 'keyword2')
     */
-    fn removeForestSplines forestObj:undefined areaNamesToRemove:undefined =
-    (
+	fn removeSplineAreaFromForest forestObj:undefined areaNamesToRemove:undefined =
+	(
+		if forestObj == undefined or areaNamesToRemove == undefined then
+		(
+			print "Forest to remove or area to remove not found"
+			return undefined
+		)
 
-        for i = forestObj.arnamelist.count to 1 by -1 do
-        (
-			print i
-            if (findString areaNamesToRemove forestObj.arnamelist[i]) != undefined do
-            (
-                forestObj.arnamelist.count -= 1
-                forestObj.arnodelist.count -= 1
-                forestObj.artypelist.count -= 1
-                forestObj.arincexclist.count -= 1
-            )
-        )
+		-- Parcours de la liste des areas du Forest
+		for i = forestObj.arnamelist.count to 1 by -1 do
+		(
+			if i <= 1 then
+			(
+				exit 
+			)
+			else
+			(
+				if findString areaNamesToRemove forestObj.arnamelist[i] == true then
+				(
+					-- Supprimer le node correspondant
+					deleteItem forestObj.aridlist i
+					deleteItem forestObj.arnamelist i
+					deleteItem forestObj.arnodelist i
+					deleteItem forestObj.artypelist i
+					deleteItem forestObj.arincexclist i
+					deleteItem forestObj.arwidthlist i
+					deleteItem forestObj.arflafdenslist i
+					deleteItem forestObj.arflafscalist i
+				)
+			)
+		)
+		
 
-        print "Specified Forest spline areas removed."
-    ),
+		
+		-- Mise à jour de ForestPack après suppression
+		forestObj.enabled = false
+		forestObj.enabled = true
+	),
 
 
     /*
@@ -517,7 +534,7 @@ struct ST_ForestSplit
 		(
 			if (classof obj == Forest_Pro or classof obj == Forest) do
 			(
-				removeForestSplines forestObj:obj areaNamesToRemove:(TOOLCODE + "Area")
+				removeSplineAreaFromForest forestObj:obj areaNamesToRemove:(TOOLCODE + "Area")
 			)
 		)
 			
