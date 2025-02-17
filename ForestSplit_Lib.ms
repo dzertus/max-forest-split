@@ -1,3 +1,6 @@
+-- todo
+
+
 global ForestSplitRollout
 
 struct ST_ForestSplit
@@ -142,6 +145,7 @@ struct ST_ForestSplit
         )
     ),
 
+	
     /*
         Function: createSplitAreaCircle
 		Creates the entry point needed circle 
@@ -163,7 +167,6 @@ struct ST_ForestSplit
 		
 	),
 
-	
     /*
         Function: addEditSplineModifier
         Adds a edit spline modifier to an object
@@ -285,6 +288,7 @@ struct ST_ForestSplit
         )
     ),
 
+	
     /*
         Function: refreshForestObject
         This is needed to display correctly the new split forests
@@ -324,6 +328,7 @@ struct ST_ForestSplit
 
     ),
 
+	
     /*
         Function: addSplineAreaToForest
         This will add a spline area to a forest / forest pro object.
@@ -378,6 +383,7 @@ struct ST_ForestSplit
         )
     ),
 
+	
     /*
         Function: removeForestSplines
         This will remove areas based on key words passed from a list of keywords.
@@ -428,7 +434,27 @@ struct ST_ForestSplit
 		forestObj.enabled = true
 	),
 
+	
+    /*
+        Function: forestHasSurfaceArea
+        This will analyse if the forest has a surface type Area
 
+        Parameters:
+            forestObj (string) - The forest object to analyse
+    */
+	fn forestHasSurfaceArea forestObj =
+	(
+		if (classof forestObj == Forest_Pro or classof forestObj == Forest) then
+		(
+			for i = 1 to forestObj.artypelist.count do
+			(
+				if forestObj.artypelist[i] == 2 then return true
+			)
+		)
+		return false
+	),
+	
+	
     /*
         Function: moveObjectToLayer
         Moves an object to a specific scene layer. If the layer does not exist, it creates one.
